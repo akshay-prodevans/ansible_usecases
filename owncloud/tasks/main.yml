@@ -67,7 +67,7 @@
     line: '{{ item.line }}'
   with_items:
   - { regexp: '^user = apache', line: 'user = nginx' }
-  - { regexp: '^user = apache', line: 'user = nginx' }
+  - { regexp: '^group = apache', line: 'user = nginx' }
 
 - name: creating directory for session-path
   file:
@@ -152,6 +152,8 @@
     state: directory
     owner: nginx
     group: nginx
+    mode: 0775
+    recurse: yes
 
 - name: creating data directory for owncloud
   file:
@@ -159,12 +161,16 @@
     state: directory
     owner: nginx
     group: nginx
+    mode: 0775
+    recurse: yes
 
 - name: configuring virtualhost for owncloud
-  command: mv default.conf default
-  args:
-    chdir: /etc/nginx/conf.d/
-  ignore_errors: yes
+  copy:
+    src: default
+    dest: /etc/nginx/conf.d/default
+#  command: mv default.conf default
+#  args:
+#    chdir: /etc/nginx/conf.d/
 
 - name: copy owncloud configurations
   copy:
@@ -180,3 +186,6 @@
   - { service: 'nginx' }
   - { service: 'mariadb' }
   - { service: 'php-fpm' }
+
+- name: rebooting system
+  include: reboot.yml
